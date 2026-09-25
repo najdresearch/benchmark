@@ -1,5 +1,5 @@
 # Najd Benchmark
 
-Source repository for task definitions, scoring contracts, baselines, and reproducible reports. The benchmark consumes versioned, approved datasets from `najdresearch/datasets`; the Arena application runs evaluations and presents results.
+Source repository for task definitions, scoring contracts, baselines, and reproducible reports. The benchmark consumes versioned, approved datasets from `najdresearch/datasets`; the Arena application handles submissions, execution, review, and presentation.
 
-Keep Saudi/Arabic classification, agent tool decisions, and computer-use actions on separate scorecards. First milestone: freeze the Saudi service-request routing task contract and an independently reviewed holdout before reporting model rankings.
+The [platform contract](docs/platform-contract.md) records the first text score, repository boundaries, submission policy, and release gates. Classification, tool decisions, computer use, embeddings, reranking, OCR, STT, and TTS remain separate scorecards with their own scoring methods.
