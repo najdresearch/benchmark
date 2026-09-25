@@ -3,6 +3,7 @@ name = "najd-benchmark"
 version = "0.1.0"
 description = "Versioned Najd task contracts and deterministic scoring"
 requires-python = ">=3.11"
+license = "Apache-2.0"
 dependencies = []
 
 [project.scripts]
