@@ -1,4 +1,5 @@
 import copy
+import hashlib
 
 import pytest
 
@@ -50,3 +51,16 @@ def test_prompt_includes_ordered_options():
     case = copy.deepcopy(CASE)
     case["prompt"] = "Question?"
     assert build_messages(case)[1]["content"] == "Question?\n\nA. one\nB. two\nC. three"
+
+
+def test_review_status_does_not_control_eligibility(monkeypatch):
+    from najd_benchmark import arabic_mmlu
+
+    monkeypatch.setattr(arabic_mmlu, "CASE_COUNT", 1)
+    monkeypatch.setattr(
+        arabic_mmlu, "CASE_IDS_SHA256", hashlib.sha256(b"example\n").hexdigest()
+    )
+    value = copy.deepcopy(CASE)
+    value["audit_status"] = "certified"
+    value["review_status"] = "not_reviewed"
+    assert validate_cases([value]) == [value]
