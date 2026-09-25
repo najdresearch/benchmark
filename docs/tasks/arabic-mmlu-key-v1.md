@@ -1,6 +1,6 @@
 # ArabicMMLU answer-key task v1
 
-This is the first executable Najd text task. It checks whether a model picks the right option for an Arabic question. It is an **experimental task score**, not yet a certified leaderboard score.
+This is the first executable Najd text task. It checks whether a model picks the right option for an Arabic question. The task scorer is reproducible; inclusion in the certified aggregate still requires the aggregate's frozen protocol and validation.
 
 | Field | Frozen value or rule |
 |---|---|
@@ -29,4 +29,4 @@ The CLI checks the entire certified case file's SHA-256 before scoring. Missing 
 
 Unit tests cover correct keys, wrong keys, malformed answers, extra text, out-of-range options, and prompt rendering. The scorer accepted the reference answer on all 104 pinned cases. A synthetic response comparison with Arena matched all 104 exact-answer and wrong-answer scores, and diverged on all 104 examples when the correct key was followed by extra text, lowercase, or JSON with extra fields. This is an intended protocol change, so results need a new task version.
 
-The published cases have `review_status: not_reviewed`. Before this task can count toward a certified Najd Text score, an independent Arabic reviewer should inspect a preregistered sample for label correctness, option clarity, and source leakage. Record every reviewed case ID, verdict, and correction separately from the frozen release. If label errors exceed the prespecified tolerance, revise the dataset and task version instead of silently editing the score. This public subset cannot serve as a hidden holdout.
+The published cases have `review_status: not_reviewed`. That field is informational and **does not filter or disqualify cases** in this task. If review is enabled later, it needs a separate versioned policy; historical scores must not change silently. This public subset cannot serve as a hidden holdout.

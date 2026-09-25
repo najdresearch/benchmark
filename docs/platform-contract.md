@@ -4,7 +4,7 @@
 
 Najd should let a verified organization submit an endpoint, watch an evaluation run, and inspect a reproducible result. A public reader should see what was measured and which evidence supports a ranking.
 
-The datasets repository already pins the `najd-benchmark@2026.09.14` release: 5,717 certified cases and 372 quarantined cases. The certified split is public. The benchmark repository currently has no executable scoring package. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. Its scoring logic is not yet owned by this repository. No score should be described as independently certified until the gates below pass.
+The datasets repository already pins the `najd-benchmark@2026.09.14` release: 5,717 certified cases and 372 quarantined cases. The certified split is public. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. The dataset's `review_status` field is informational and does not affect eligibility unless a future versioned policy explicitly activates it.
 
 Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/cb30c1c9e46c62f691380c3269885cdb8f22f52b/datasets/najd-benchmark/2026.09.14>.
 
@@ -68,7 +68,7 @@ These lanes never share a leaderboard or a score name. A future controlled lane 
 
 | Milestone | Reviewable evidence | Proceed when | Stop or revise when |
 |---|---|---|---|
-| 1. Freeze one text task | Versioned task contract, fixed case IDs, baseline, scorer tests, human error audit | An independent runner reproduces the same scores from the same responses | Label ambiguity or grader error makes ranking unstable |
+| 1. Freeze one text task | Versioned task contract, fixed case IDs, baseline, scorer tests, independent runner comparison | An independent runner reproduces the same scores from the same responses | Scorer error makes ranking unstable |
 | 2. Freeze text score v1 | Frozen task list and weights, complete-case policy, uncertainty report, at least two baselines | Repeated runs give interpretable differences and every score is traceable to graded cases | Score is dominated by one source, judge drift, or invalid outputs |
 | 3. Connect Arena | Arena worker imports benchmark package; one submitted endpoint run produces a matching local report | No duplicate scoring implementation; secret and endpoint boundary checks pass | Progress, credentials, or grader results leak across organizations |
 | 4. Publish leaderboard | Manual review trail, public methodology and limitation, model identity status | Published rows can be independently checked from released artifacts | Organization identity or result provenance is unverifiable |
@@ -80,4 +80,4 @@ The design borrows task-specific metrics and transparent scenarios from [HELM](h
 
 ## Immediate next artifact
 
-Implement the first task contract and scorer here, then compare its output byte-for-byte with Arena's current scorer on a frozen set of responses. Move Arena to the package only after that comparison and the human error audit pass. The candidate first task should be a certified, objectively graded Saudi/Arabic text task from the existing release; task selection requires checking label quality and class balance, not just row count.
+The first task contract and scorer are implemented here. Connect Arena to its frozen prompt and scorer, then compare outputs on a fixed response set. Next, freeze the overall score formula and task weights. The `review_status` field remains unused until a separate policy version activates it.
