@@ -147,6 +147,7 @@ def main():
     )
     parser.add_argument("--model-path")
     parser.add_argument("--device", choices=["cpu", "cuda"])
+    parser.add_argument("--precision", choices=["native", "fp32"], default="native")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
     import torch
@@ -213,7 +214,7 @@ def main():
     elif args.system in PINS:
         from .local_backends import load
 
-        predict = load(args.system, device=args.device)
+        predict = load(args.system, device=args.device, precision=args.precision)
     elif args.system == "julia":
         from julia import load_model
 

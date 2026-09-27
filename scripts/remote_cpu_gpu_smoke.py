@@ -23,12 +23,20 @@ parser.add_argument("--pack", type=Path, required=True)
 parser.add_argument("--output", type=Path, required=True)
 parser.add_argument("--dataset-revision", required=True)
 parser.add_argument("--max-seconds", type=int, default=600)
+parser.add_argument("--devices", nargs="+", choices=["cpu", "cuda"], default=["cpu", "cuda"])
+parser.add_argument(
+    "--systems",
+    nargs="+",
+    choices=["gliner", "laya_english", "laya_multi"],
+    default=["gliner", "laya_english", "laya_multi"],
+)
+parser.add_argument("--precision", choices=["native", "fp32"], default="native")
 args = parser.parse_args()
 manifest, cases = load_pack(args.pack)
 cases_bytes = (args.pack / "cases.jsonl").read_bytes()
 root = args.output
 root.mkdir(parents=True, exist_ok=False)
-systems = ["gliner", "laya_english", "laya_multi"]
+systems = args.systems
 for name in systems:
     mid, rev = (MODELS | PINS)[name]
     snapshot_download(
@@ -45,7 +53,7 @@ hardware = {
     "model_pins": {n: (MODELS | PINS)[n] for n in systems},
 }
 (root / "environment.json").write_text(json.dumps(hardware, indent=2))
-for device in ["cpu", "cuda"]:
+for device in args.devices:
     for name in systems:
         out = root / (name + "-" + device)
         out.mkdir(exist_ok=False)
@@ -69,6 +77,8 @@ for device in ["cpu", "cuda"]:
                     name,
                     "--device",
                     device,
+                    "--precision",
+                    args.precision,
                     "--port",
                     "8793",
                 ],
@@ -111,6 +121,7 @@ for device in ["cpu", "cuda"]:
                     system=name,
                     device=device,
                     threads=4,
+                    precision=args.precision,
                     concurrency=1,
                     warmup_requests=3,
                     ready_seconds=ready,

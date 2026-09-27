@@ -13,7 +13,7 @@ PINS = {
 }
 
 
-def load(system, device=None):
+def load(system, device=None, precision="native"):
     import torch
     from huggingface_hub import snapshot_download
 
@@ -31,6 +31,9 @@ def load(system, device=None):
         from laya.common import render_options
 
         model = laya.load(local, device=device or "cpu", fast=False)
+        if precision == "fp32":
+            model.amp_enabled = False
+            model.dtype = torch.float32
 
         def predict(state, questions):
             text = canonical(state)

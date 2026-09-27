@@ -52,3 +52,7 @@ PYTHONPATH=src USE_TF=0 python scripts/remote_cpu_gpu_smoke.py \
 ```
 
 The fetcher requires an immutable commit SHA and verifies every file in the release lock. The worker verifies the pack hash and accepts development/public-reference lanes only. Reserved/validation packs cannot silently enter the development runner. The remote cleanup watchdog for this larger run is 40 minutes. Dependencies must be installed before timing begins, including pinned PEFT and Accelerate.
+
+### Precision control
+
+Laya 0.3.20 enables GPU autocast by default, while CPU AMP is opt-in. Therefore `--precision native` compares backend configurations, not hardware alone. Use `--precision fp32` to disable Laya autocast and compare FP32 CPU with FP32 CUDA. Keep native GPU results as a separate optimized configuration. GLiNER remains at its loaded default precision. The follow-up GPU FP32 run uses the same machine and cases.
