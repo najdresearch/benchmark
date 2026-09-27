@@ -103,7 +103,8 @@ def run(
         pack["scorer"]["id"],
         pack["scorer"]["version"],
         pack["harness"]["id"],
-    ) != ("classification", "json_label", "exact-label", "1", "single-turn"):
+        pack["harness"]["version"],
+    ) != ("classification", "json_label", "exact-label", "1", "single-turn", "1"):
         raise ValueError("Unsupported task contract; no fallback scorer")
     from importlib.resources import files
     from pathlib import Path

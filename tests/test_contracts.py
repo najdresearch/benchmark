@@ -68,3 +68,10 @@ def test_output_contract_and_canonical_json():
     assert parse_label('{"label":"billing","extra":true}', ['billing']) is None
     assert parse_label('["billing"]', ['billing']) is None
     assert digest({'a': 1.0, 'ب': 2}) == digest({'ب': 2, 'a': 1})
+
+
+def test_unknown_harness_version_stops_before_requests():
+    manifest, pack, cases = load_pack(PACK)
+    pack['harness']['version'] = 'future'
+    with pytest.raises(ValueError, match='Unsupported task contract'):
+        run(manifest, pack, cases, endpoint='http://localhost/v1', model='fixture')
