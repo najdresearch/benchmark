@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 
 
-def load_pack(directory: Path):
+def load_pack(directory: Path, *, allow_public_evaluation=False):
     manifest = json.loads((directory / "manifest.json").read_text())
     data = (directory / "cases.jsonl").read_bytes()
     if hashlib.sha256(data).hexdigest() != manifest["cases_sha256"]:
@@ -17,7 +17,10 @@ def load_pack(directory: Path):
     if len(ids) != len(set(ids)) or len(cases) != manifest["cases"] or not cases:
         raise ValueError("Case count or identity mismatch")
     for c in cases:
-        if c["split"] not in ("development", "public_reference") or c["language"] not in (
+        permitted = {"development", "public_reference"}
+        if allow_public_evaluation and manifest.get("redistribution_cleared") is True:
+            permitted.update({"validation", "reserved_evaluation"})
+        if c["split"] not in permitted or c["language"] not in (
             "en",
             "ar",
         ):
@@ -172,4 +175,24 @@ def score(cases, responses):
             "claim": "development diagnostic, not a load benchmark",
         },
         "details": details,
+    }
+
+
+def output_schema(questions):
+    """Strict flat output shape, independent of gold answers."""
+    fields = {}
+    for key, q in questions.items():
+        if q["type"] == "choice":
+            fields[key] = {"type": "string", "enum": list(q["criteria"])}
+        elif q["type"] == "score":
+            fields[key] = {"type": "integer", "enum": list(range(len(q["criteria"])))}
+        elif q["type"] == "noul":
+            fields[key] = {"type": "boolean"}
+        else:
+            raise ValueError("Unsupported type")
+    return {
+        "type": "object",
+        "properties": fields,
+        "required": list(fields),
+        "additionalProperties": False,
     }

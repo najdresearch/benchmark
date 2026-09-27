@@ -76,17 +76,45 @@ def load(system, device=None, precision="native"):
     elif system == "jevk5":
         from jevk5 import JevK5
 
-        model = JevK5(local, device="mps", dtype=torch.bfloat16, graphs=False)
+        model = JevK5(
+            local,
+            device=device or "mps",
+            dtype=torch.float32 if precision == "fp32" else torch.bfloat16,
+            graphs=False,
+        )
 
         def predict(state, questions):
             raw = {"answers": {k: model.decide(canonical(state), q) for k, q in questions.items()}}
-            torch.mps.synchronize()
+            if model.device == "mps":
+                torch.mps.synchronize()
+            elif str(model.device).startswith("cuda"):
+                torch.cuda.synchronize()
             return typed_answers(questions, raw), raw
     else:
         from jevk5.prompt import answer, decision_options
-        from semif_phase1.mlx_backend import load_model, score
 
-        model, tok, metadata = load_model(model_id, revision)
+        if device in ("cpu", "cuda"):
+            import transformers
+            from semif_phase1.direct import score
+
+            config = transformers.AutoConfig.from_pretrained(local).get_text_config()
+            tok = transformers.AutoTokenizer.from_pretrained(local)
+            model = transformers.Qwen3_5ForCausalLM.from_pretrained(
+                local,
+                config=config,
+                dtype=torch.float32 if precision == "fp32" else torch.bfloat16,
+                device_map={"": device},
+            ).eval()
+            metadata = {
+                "source": model_id,
+                "revision": revision,
+                "device": device,
+                "dtype": str(next(model.parameters()).dtype),
+            }
+        else:
+            from semif_phase1.mlx_backend import load_model, score
+
+            model, tok, metadata = load_model(model_id, revision)
 
         def predict(state, questions):
             answers = {}

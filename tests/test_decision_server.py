@@ -53,3 +53,20 @@ def test_invalid_probability_rejected():
     for value in [float("nan"), float("inf"), -0.1, 1.1]:
         with pytest.raises(ValueError):
             typed_answers({"x": {"type": "noul"}}, {"answers": {"x": {"noul": value}}})
+
+
+def test_diffusion_wrapper_receives_readable_arabic_after_json_transport():
+    from najd_benchmark.decision_server import systemone_payload
+
+    state = {"query": "أبي أجدّد الإقامة، رقم الطلب ١٢٣", "policy": "لا ترسل الطلب"}
+    questions = {"action": {"type": "choice", "criteria": {"انتظار": "انتظر الموافقة"}}}
+    body = systemone_payload(state, questions, diffusion=True)
+    # HTTP JSON escaping is harmless once decoded; the model-facing state must be text.
+    received = json.loads(json.dumps(body))
+    wrapper_text = received["state"]
+    assert isinstance(wrapper_text, str)
+    assert "أبي أجدّد الإقامة" in wrapper_text
+    assert "\\u062" not in wrapper_text
+    assert json.loads(wrapper_text) == state
+    assert received["questions"] == questions
+    assert (received["samples"], received["seed"]) == (1, 42)

@@ -17,6 +17,14 @@ def canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True)
 
 
+def systemone_payload(state, questions, *, diffusion=False):
+    """Pass readable text through wrappers that ASCII-escape object-valued states."""
+    body = {"model": "jev-latest", "state": canonical(state), "questions": questions}
+    if diffusion:
+        body.update(samples=1, seed=42)
+    return body
+
+
 def typed_answers(questions, raw):
     answers = raw["answers"]
     output = {}
@@ -141,6 +149,10 @@ def main():
             *MODELS,
             *PINS,
             "julia",
+            "needle",
+            "qwen_remote",
+            "localjev_remote",
+            "diffusiongemma_remote",
             "sev",
             "jev_api",
             "span_api",
@@ -150,6 +162,8 @@ def main():
         required=True,
     )
     parser.add_argument("--model-path")
+    parser.add_argument("--upstream", default="http://127.0.0.1:8770")
+    parser.add_argument("--request-timeout", type=float, default=60)
     parser.add_argument("--device", choices=["cpu", "cuda"])
     parser.add_argument("--precision", choices=["native", "fp32"], default="native")
     parser.add_argument("--port", type=int, default=8765)
@@ -172,7 +186,7 @@ def main():
             "http://127.0.0.1:8770",
             model=args.model_path,
             tokenizer=args.model_path,
-            timeout=20,
+            timeout=args.request_timeout,
             seed=42,
             thinking_budget=64 if thinking else None,
         )
@@ -187,6 +201,44 @@ def main():
                 "thinking": client.last_thinking,
                 "prompts": client.last_prompts,
             }
+    elif args.system in ("qwen_remote", "localjev_remote", "diffusiongemma_remote"):
+        import urllib.request
+
+        from .decisions import output_schema, request_payload
+
+        def predict(state, questions):
+            if args.system == "qwen_remote":
+                payload = request_payload({"state": state, "questions": questions}, args.model_path)
+                payload["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "decision",
+                        "strict": True,
+                        "schema": output_schema(questions),
+                    },
+                }
+                payload["seed"] = 42
+                payload["chat_template_kwargs"] = {"enable_thinking": False}
+                path = "/v1/chat/completions"
+            else:
+                payload = systemone_payload(
+                    state, questions, diffusion=args.system == "diffusiongemma_remote"
+                )
+                path = "/v1/systemone"
+            req = urllib.request.Request(
+                args.upstream.rstrip("/") + path,
+                canonical(payload).encode(),
+                {"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=args.request_timeout) as response:
+                raw = json.load(response)
+            if args.system == "qwen_remote":
+                if raw["choices"][0].get("finish_reason") != "stop":
+                    raise ValueError("Generation did not complete")
+                output = json.loads(raw["choices"][0]["message"]["content"])
+            else:
+                output = typed_answers(questions, raw)
+            return output, raw
     elif args.system in ("jev_api", "span_api"):
         import os
         import urllib.request
@@ -219,11 +271,61 @@ def main():
         from .local_backends import load
 
         predict = load(args.system, device=args.device, precision=args.precision)
+    elif args.system == "needle":
+        import os
+        from pathlib import Path
+
+        import needle
+
+        from .typellm_adapter import questions_for
+
+        if args.device != "cpu":
+            parser.error("The pinned Needle native inference engine is CPU-only")
+        os.environ["NEEDLE_TELEMETRY"] = "0"
+        os.environ["NEEDLE3_LIB_PATH"] = str(Path(args.model_path) / "libneedle3.so")
+
+        def predict(state, questions):
+            fields = questions_for(questions)
+            for field in fields.values():
+                field["description"] = field.pop("instructions")
+            schema = {
+                "name": "decide",
+                "description": (
+                    "Answer the supplied decision questions using the provided state and policy."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": fields,
+                    "required": list(fields),
+                    "additionalProperties": False,
+                },
+            }
+            agent = needle.Needle(
+                tools=[schema],
+                system=(
+                    "Return the requested decisions. Follow the policy in the input. "
+                    "Do not execute any actions."
+                ),
+                auto_date=False,
+            )
+            try:
+                raw = agent.complete(canonical(state), max_new_tokens=256)
+            finally:
+                agent.close()
+            calls = raw.get("function_calls") or []
+            if len(calls) != 1 or calls[0]["name"] != "decide":
+                raise ValueError("Expected one decision object")
+            output = calls[0]["arguments"]
+            return json.loads(output) if isinstance(output, str) else output, raw
     elif args.system == "julia":
         from julia import load_model
 
         model = load_model(
-            args.model_path, device="cpu", strict_encoding=True, max_length=8192, head_length=512
+            args.model_path,
+            device=args.device or "cpu",
+            strict_encoding=True,
+            max_length=8192,
+            head_length=512,
         )
 
         def predict(state, questions):
@@ -233,7 +335,7 @@ def main():
     elif args.system == "sev":
         from sev_preview import SevPreview
 
-        model = SevPreview(args.model_path, device="cpu")
+        model = SevPreview(args.model_path, device=args.device or "cpu")
 
         def predict(state, questions):
             if any(q["type"] != "choice" for q in questions.values()):

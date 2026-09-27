@@ -141,3 +141,22 @@ def test_boolean_unsafe_annotations_do_not_match_integer(case):
     assert result(True)["unsafe_choices"] == 1
     assert result(1)["unsafe_choices"] == 0
     assert result(False)["unsafe_choices"] == 0
+
+
+def test_public_evaluation_requires_explicit_opt_in_and_clearance(tmp_path, case):
+    import hashlib
+
+    from najd_benchmark.decisions import load_pack
+
+    case["split"] = "reserved_evaluation"
+    data = (json.dumps(case) + "\n").encode()
+    (tmp_path / "cases.jsonl").write_bytes(data)
+    manifest = {"cases": 1, "cases_sha256": hashlib.sha256(data).hexdigest()}
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError):
+        load_pack(tmp_path, allow_public_evaluation=True)
+    manifest["redistribution_cleared"] = True
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError):
+        load_pack(tmp_path)
+    assert load_pack(tmp_path, allow_public_evaluation=True)[1] == [case]

@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from najd_benchmark.decision_server import canonical, typed_answers
-from najd_benchmark.decisions import load_pack, score, valid
+from najd_benchmark.decisions import load_pack, output_schema, request_payload, score, valid
 
 
 def main():
@@ -22,6 +22,11 @@ def main():
     p.add_argument("--pack", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--revision", required=True)
+    p.add_argument(
+        "--model",
+        choices=["typesafe/jev-1.13", "respan/span-01", "qwen/qwen3.8-27b"],
+        default="typesafe/jev-1.13",
+    )
     p.add_argument("--concurrency", type=int, choices=[1, 4, 16], default=1)
     p.add_argument("--repeats", type=int, default=1)
     p.add_argument("--max-seconds", type=int, default=600)
@@ -32,6 +37,13 @@ def main():
     manifest, originals = load_pack(a.pack)
     if len(originals) > 216:
         p.error("This runner is bounded to 216 unique cases")
+    total_cases = len(originals)
+    if a.model == "respan/span-01":
+        originals = [
+            c for c in originals if all(q["type"] == "noul" for q in c["questions"].values())
+        ]
+    if not originals:
+        p.error("No supported cases")
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key and a.credential_file:
         match = re.search(
@@ -42,14 +54,36 @@ def main():
     if not key:
         p.error("Configure OPENROUTER_API_KEY; never paste it into the command")
     a.output.mkdir(parents=True, exist_ok=False)
-    model = "typesafe/jev-1.13"
+    model = a.model
 
     def call(c):
-        body = canonical(
-            {"model": model, "state": c["state"], "questions": c["questions"]}
-        ).encode()
+        questions = c["questions"]
+        state = c["state"]
+        if model == "respan/span-01":
+            state = canonical(state)
+            questions = {
+                k: {**q, "criteria": q.get("criteria", {"true": "Yes", "false": "No"})}
+                for k, q in questions.items()
+            }
+        body = canonical({"model": model, "state": state, "questions": questions}).encode()
+        url = "https://openrouter.ai/api/alpha/decisions"
+        if model.startswith("qwen/"):
+            payload = request_payload(c, model)
+            payload.update(
+                seed=42, reasoning={"enabled": False}, provider={"require_parameters": True}
+            )
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "decision",
+                    "strict": True,
+                    "schema": output_schema(c["questions"]),
+                },
+            }
+            body = canonical(payload).encode()
+            url = "https://openrouter.ai/api/v1/chat/completions"
         req = urllib.request.Request(
-            "https://openrouter.ai/api/alpha/decisions",
+            url,
             body,
             {"Content-Type": "application/json", "Authorization": "Bearer " + key},
         )
@@ -67,8 +101,16 @@ def main():
             if len(raw) > 1024 * 1024:
                 raise ValueError("Oversized response")
             payload = json.loads(raw)
+            row.update(raw=payload, response_sha256=hashlib.sha256(raw).hexdigest())
+            if model.startswith("qwen/"):
+                choice = payload["choices"][0]
+                if choice.get("finish_reason") != "stop":
+                    raise ValueError("Incomplete output")
+                output = json.loads(choice["message"]["content"])
+            else:
+                output = typed_answers(c["questions"], payload)
             row.update(
-                output=typed_answers(c["questions"], payload),
+                output=output,
                 raw=payload,
                 response_sha256=hashlib.sha256(raw).hexdigest(),
             )
@@ -134,6 +176,8 @@ def main():
         dataset_revision=a.revision,
         cases_sha256=manifest["cases_sha256"],
         unique_cases=len(originals),
+        full_pack_cases=total_cases,
+        unsupported_cases=total_cases - len(originals),
         repeats=a.repeats,
         concurrency=a.concurrency,
         started_at=started_at,
