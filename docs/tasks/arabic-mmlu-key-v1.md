@@ -15,7 +15,7 @@ This is the first executable Najd text task. It checks whether a model picks the
 
 The case answers are A: 33, B: 29, C: 23, D: 18, E: 1. Always predicting A scores **33/104 = 31.73%** on this subset. A per-case uniform guess has an expected score of **29.39%** because cases have two to five options. These are sanity baselines, not useful model comparisons.
 
-The scoring package validates the frozen case IDs and includes the options in the prompt. The current Arena development runtime does not include those options for this source, so its earlier ArabicMMLU outputs must not be compared with this task. Arena's current general-choice parser also accepts a first-line answer followed by explanation or a JSON object with extra fields; this version deliberately requires the stated output contract. These differences must be visible in any migration report.
+The scoring package validates the frozen case IDs and includes the options in the prompt. Arena's current adapter imports this prompt builder. Earlier archived outputs may predate that integration and must not be assumed equivalent. This task requires exactly the stated output contract; general-choice parsers can accept additional text and therefore produce different scores.
 
 To score responses locally, save the pinned release's `cases.jsonl` and a response JSONL with `case_id` and `output` per line, then run:
 
