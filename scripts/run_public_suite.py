@@ -33,8 +33,8 @@ def main():
     p.add_argument("--pack-seconds", type=int, default=3600)
     p.add_argument("--total-seconds", type=int, default=21600)
     a = p.parse_args()
-    # Pinned structured-diffusion wrapper maps alternatives to single A-Z labels.
-    if a.model == "diffusiongemma_remote":
+    # Both pinned runtimes map 2–26 alternatives to single A-Z labels.
+    if a.model in {"diffusiongemma_remote", "semif"}:
         a.min_options = max(a.min_options, 2)
         a.max_options = min(a.max_options or 26, 26)
     # This exact public draft was cleared and published before this evaluation.
