@@ -6,9 +6,9 @@
 
 Najd should let a verified organization submit an endpoint, watch an evaluation run, and inspect a reproducible result. A public reader should see what was measured and which evidence supports a ranking.
 
-The datasets repository already pins the `najd-benchmark@2026.09.27` release: 6,089 cases in one public default configuration. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. Review annotations are not required and do not affect task eligibility.
+The datasets repository already pins the `najd-benchmark@2026.09.27.1` release: 6,089 cases in one public default configuration. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. Review annotations are not required and do not affect task eligibility.
 
-Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/e2dcd2aac116da180835ce9eacc7572bc7cec2f7/datasets/najd-benchmark/2026.09.27>.
+Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569/datasets/najd-benchmark/2026.09.27>.
 
 ```mermaid
 flowchart LR

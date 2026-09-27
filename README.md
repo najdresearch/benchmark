@@ -20,7 +20,7 @@ uv run pytest
 uv run najd-benchmark --cases /path/to/cases.jsonl --responses /path/to/responses.jsonl
 ```
 
-Download `datasets/najd-benchmark/2026.09.27/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/e2dcd2aac116da180835ce9eacc7572bc7cec2f7). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
+Download `datasets/najd-benchmark/2026.09.27/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
 
 Current case-file SHA-256: `149e6815a29434a462e9d1f8f3ccbb21a142c79848947ad20c19b9639c72c081`.
 This revision removes review annotations without changing case content. The 104-case selection and scorer are unchanged. Missing/invalid outputs score zero; unknown or duplicate response IDs fail validation. Annotations do not control eligibility.
@@ -49,3 +49,11 @@ A reviewed task definition, baseline and deterministic scorer for the internal A
 ## Unified dataset release
 
 The current pin contains all 6,089 cases without audit-status or review-status fields. The ArabicMMLU task still selects the same 104 case IDs and uses the same scoring contract. This package does not yet implement a full-suite endpoint runner. Previously generated reports retain their original dataset revisions.
+
+## File-based tasks and answer corrections
+
+The package provides a bounded virtual filesystem for six public fixture tasks and a
+strict scorer for four corrected Absher items. See [the protocol and scoring guide](docs/fixture-tasks.md).
+Arena uses the same implementation for local runs and hosted workers; tool transcripts
+and output files are retained as evidence. This harness condition is distinct from raw
+single-turn inference and Pi.
