@@ -6,7 +6,7 @@
 
 Najd should let a verified organization submit an endpoint, watch an evaluation run, and inspect a reproducible result. A public reader should see what was measured and which evidence supports a ranking.
 
-The datasets repository already pins the `najd-benchmark@2026.09.14` release: 5,717 certified cases and 372 quarantined cases. The certified split is public. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. The dataset's `review_status` field is informational and does not affect eligibility unless a future versioned policy explicitly activates it.
+The datasets repository already pins the `najd-benchmark@2026.09.14` release: 5,717 certified cases and 372 quarantined cases. The certified split is public. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. Review annotations are not required and do not affect task eligibility.
 
 Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/cb30c1c9e46c62f691380c3269885cdb8f22f52b/datasets/najd-benchmark/2026.09.14>.
 
@@ -82,4 +82,4 @@ The design borrows task-specific metrics and transparent scenarios from [HELM](h
 
 ## Immediate next artifact
 
-The first task contract and scorer are implemented here. Connect Arena to its frozen prompt and scorer, then compare outputs on a fixed response set. Next, freeze the overall score formula and task weights. The `review_status` field remains unused until a separate policy version activates it.
+The first task contract and scorer are implemented here. Connect Arena to its frozen prompt and scorer, then compare outputs on a fixed response set. Next, freeze the overall score formula and task weights. Task eligibility follows the versioned task contract.
