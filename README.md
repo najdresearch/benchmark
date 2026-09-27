@@ -57,3 +57,10 @@ strict scorer for four corrected Absher items. See [the protocol and scoring gui
 Arena uses the same implementation for local runs and hosted workers; tool transcripts
 and output files are retained as evidence. This harness condition is distinct from raw
 single-turn inference and Pi.
+
+## Shared contracts (Step 2)
+
+[Contracts v1](docs/shared-contracts-v1.md) define dataset manifests, task packs and
+private result bundles. `najd-contract` validates them and runs the small Arabic support
+routing example against local or remote OpenAI-compatible endpoints. Arena has an
+admin-only preview for these bundles; CLI results cannot become public Arena results.

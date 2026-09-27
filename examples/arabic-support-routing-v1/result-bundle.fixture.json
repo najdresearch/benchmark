@@ -1,0 +1,320 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "result_bundle",
+  "dataset_manifest": {
+    "schema_version": "1.0.0",
+    "kind": "dataset_manifest",
+    "id": "arabic-support-routing",
+    "version": "1.0.0",
+    "description": "Eight original synthetic Arabic support-routing development cases.",
+    "split": "development",
+    "source": {
+      "url": "https://github.com/najdresearch/datasets",
+      "revision": "support-template-v1",
+      "method": "Deterministic original templates; no customer data."
+    },
+    "rights": {
+      "license": "CC0-1.0",
+      "evidence_url": "https://github.com/najdresearch/datasets/blob/main/examples/arabic-support-routing-v1/README.md"
+    },
+    "cases": {
+      "path": "cases.jsonl",
+      "sha256": "f0f6a0ef3d41af62b626aa67aa9e31cef5341bfe2a3ad8b236f671e717bcf66c",
+      "count": 8
+    },
+    "case_ids": [
+      "support-dev-01",
+      "support-dev-02",
+      "support-dev-03",
+      "support-dev-04",
+      "support-dev-05",
+      "support-dev-06",
+      "support-dev-07",
+      "support-dev-08"
+    ],
+    "created_at": "2026-09-27T00:00:00Z"
+  },
+  "task_pack": {
+    "schema_version": "1.0.0",
+    "kind": "task_pack",
+    "id": "arabic-support-routing",
+    "version": "1.0.0",
+    "description": "Route a customer message to a queue; this does not test support quality.",
+    "dataset": {
+      "id": "arabic-support-routing",
+      "version": "1.0.0",
+      "cases_sha256": "f0f6a0ef3d41af62b626aa67aa9e31cef5341bfe2a3ad8b236f671e717bcf66c"
+    },
+    "task_type": "classification",
+    "labels": [
+      "billing",
+      "delivery",
+      "returns",
+      "handoff"
+    ],
+    "system_prompt": "صنف رسالة العميل إلى billing للفواتير، delivery للتوصيل، returns للإرجاع أو الاستبدال، handoff لطلب موظف أو مشرف. أعد JSON فقط بمفتاح label وقيمة واحدة من هذه القيم.",
+    "output_format": "json_label",
+    "harness": {
+      "id": "single-turn",
+      "version": "1"
+    },
+    "scorer": {
+      "id": "exact-label",
+      "version": "1",
+      "metrics": [
+        "accuracy",
+        "macro_f1",
+        "confusion_matrix",
+        "latency_ms"
+      ]
+    },
+    "budget": {
+      "max_tokens": 128,
+      "timeout_seconds": 30,
+      "max_attempts": 1
+    },
+    "baseline": {
+      "strategy": "always-billing",
+      "description": "Constant billing predicts 2/8 correctly (25%)."
+    },
+    "uncertainty": {
+      "method": "wilson-95",
+      "limitations": "Eight public development cases; not a held-out test or model ranking."
+    },
+    "stop_rules": [
+      "Stop if dataset hash or case IDs differ.",
+      "Count invalid output and provider failures in the accuracy denominator.",
+      "Do not publish this development fixture as a model benchmark."
+    ]
+  },
+  "run": {
+    "id": "c30df70f-08d9-4705-b98c-4ab6e26bd4ed",
+    "origin": "local_cli",
+    "organization_id": null,
+    "visibility": "private",
+    "benchmark_version": "0.2.0",
+    "benchmark_revision": "unknown",
+    "benchmark_source_sha256": "dae29b4f9e2e6bb3339afcda8fe0cabdb39f74be5741819a734a0516dcc97899",
+    "model_requested": "fixture",
+    "models_returned": [
+      "fixture-v1"
+    ],
+    "endpoint_kind": "local",
+    "temperature": 0,
+    "started_at": "2026-09-27T17:00:33.557718+00:00",
+    "finished_at": "2026-09-27T17:00:33.558625+00:00"
+  },
+  "records": [
+    {
+      "case_id": "support-dev-01",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "billing",
+      "predicted_label": "billing",
+      "latency_ms": 0.237,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-02",
+      "status": "invalid_output",
+      "output": "billing",
+      "expected_label": "billing",
+      "predicted_label": null,
+      "latency_ms": 0.1,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "0c95c7ece1ce1a9750275ef1c6d7ad6b278f70d66592207783ffe7d58474cc01",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-03",
+      "status": "provider_error",
+      "output": "",
+      "expected_label": "delivery",
+      "predicted_label": null,
+      "latency_ms": 0.056,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": "ReadTimeout",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-04",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "delivery",
+      "predicted_label": "billing",
+      "latency_ms": 0.065,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-05",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "returns",
+      "predicted_label": "billing",
+      "latency_ms": 0.058,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-06",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "returns",
+      "predicted_label": "billing",
+      "latency_ms": 0.055,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-07",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "handoff",
+      "predicted_label": "billing",
+      "latency_ms": 0.055,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    },
+    {
+      "case_id": "support-dev-08",
+      "status": "ok",
+      "output": "{\"label\":\"billing\"}",
+      "expected_label": "handoff",
+      "predicted_label": "billing",
+      "latency_ms": 0.051,
+      "usage": {
+        "prompt_tokens": null,
+        "completion_tokens": null
+      },
+      "error_class": null,
+      "response_sha256": "9892ddfb296c6aa21f5ccff658f6faf25122e12f102305b44fd7f99475ee8e0e",
+      "artifacts": []
+    }
+  ],
+  "metrics": {
+    "case_count": 8,
+    "correct": 1,
+    "invalid_outputs": 1,
+    "provider_errors": 1,
+    "accuracy": 0.125,
+    "grading_coverage": 0.875,
+    "macro_f1": 0.0625,
+    "per_label": [
+      {
+        "label": "billing",
+        "support": 2,
+        "precision": 0.16666666666666666,
+        "recall": 0.5,
+        "f1": 0.25
+      },
+      {
+        "label": "delivery",
+        "support": 2,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0
+      },
+      {
+        "label": "returns",
+        "support": 2,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0
+      },
+      {
+        "label": "handoff",
+        "support": 2,
+        "precision": 0,
+        "recall": 0.0,
+        "f1": 0
+      }
+    ],
+    "confusion_matrix": [
+      {
+        "expected": "billing",
+        "predicted": "billing",
+        "count": 1
+      },
+      {
+        "expected": "billing",
+        "predicted": null,
+        "count": 1
+      },
+      {
+        "expected": "delivery",
+        "predicted": "billing",
+        "count": 1
+      },
+      {
+        "expected": "delivery",
+        "predicted": null,
+        "count": 1
+      },
+      {
+        "expected": "returns",
+        "predicted": "billing",
+        "count": 2
+      },
+      {
+        "expected": "handoff",
+        "predicted": "billing",
+        "count": 2
+      }
+    ],
+    "accuracy_ci95": {
+      "low": 0.02241749145005667,
+      "high": 0.4708881822128535,
+      "method": "wilson"
+    },
+    "latency_ms": {
+      "p50": 0.056,
+      "p95": 0.237,
+      "count": 8,
+      "method": "nearest-rank"
+    },
+    "tokens": {
+      "prompt": 0,
+      "completion": 0,
+      "cases_with_missing_usage": 8
+    },
+    "cost_usd": null
+  },
+  "dataset_manifest_sha256": "2b17fb7197551f9e3ce41d4eeeb5783c12876fe95c9cc287652f1bac6138deed",
+  "task_pack_sha256": "abb273e40631e105bae9262ba2d3858e0f981f90dfee0d932a0a2ff9c7e584cb",
+  "bundle_sha256": "4b4f094cfe51a5254516ce101dcceaef49b71f3f20e20d5e89bf3ef005332388"
+}

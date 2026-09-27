@@ -1,12 +1,17 @@
 [project]
 name = "najd-benchmark"
-version = "0.1.0"
+version = "0.2.0"
 description = "Versioned Najd task contracts and deterministic scoring"
 requires-python = ">=3.11"
 license = "Apache-2.0"
-dependencies = []
+dependencies = [
+    "httpx>=0.28,<1",
+    "jsonschema>=4.23,<5",
+    "rfc8785>=0.1,<1",
+]
 
 [project.scripts]
+najd-contract = "najd_benchmark.contract_cli:main"
 najd-benchmark = "najd_benchmark.cli:main"
 
 [project.optional-dependencies]
