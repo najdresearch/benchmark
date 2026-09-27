@@ -129,6 +129,10 @@ def handler_for(model_id, predict):
     return Handler
 
 
+class DecisionHTTPServer(ThreadingHTTPServer):
+    request_queue_size = 128
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -261,7 +265,7 @@ def main():
             return normalize(questions, raw), raw
 
     print("READY", args.system, flush=True)
-    ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(args.system, predict)).serve_forever()
+    DecisionHTTPServer(("127.0.0.1", args.port), handler_for(args.system, predict)).serve_forever()
 
 
 if __name__ == "__main__":
