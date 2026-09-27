@@ -1,5 +1,7 @@
 # Evaluation contract v2 — implementation target
 
+Implemented Step 2: see [shared contracts v1](shared-contracts-v1.md) for the working schemas, classification runner and private Arena preview. The remaining sections record the broader destination.
+
 This contract records the agreed destination. It does not claim that the endpoint runner or Arena integration is implemented. It supersedes repository ownership and publication policy in the v1 platform contract; historical scores retain their original protocol.
 
 ## Repository boundaries

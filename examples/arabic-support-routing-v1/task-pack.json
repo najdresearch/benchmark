@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "task_pack",
+  "id": "arabic-support-routing",
+  "version": "1.0.0",
+  "description": "Route a customer message to a queue; this does not test support quality.",
+  "dataset": {
+    "id": "arabic-support-routing",
+    "version": "1.0.0",
+    "cases_sha256": "f0f6a0ef3d41af62b626aa67aa9e31cef5341bfe2a3ad8b236f671e717bcf66c"
+  },
+  "task_type": "classification",
+  "labels": [
+    "billing",
+    "delivery",
+    "returns",
+    "handoff"
+  ],
+  "system_prompt": "صنف رسالة العميل إلى billing للفواتير، delivery للتوصيل، returns للإرجاع أو الاستبدال، handoff لطلب موظف أو مشرف. أعد JSON فقط بمفتاح label وقيمة واحدة من هذه القيم.",
+  "output_format": "json_label",
+  "harness": {
+    "id": "single-turn",
+    "version": "1"
+  },
+  "scorer": {
+    "id": "exact-label",
+    "version": "1",
+    "metrics": [
+      "accuracy",
+      "macro_f1",
+      "confusion_matrix",
+      "latency_ms"
+    ]
+  },
+  "budget": {
+    "max_tokens": 128,
+    "timeout_seconds": 30,
+    "max_attempts": 1
+  },
+  "baseline": {
+    "strategy": "always-billing",
+    "description": "Constant billing predicts 2/8 correctly (25%)."
+  },
+  "uncertainty": {
+    "method": "wilson-95",
+    "limitations": "Eight public development cases; not a held-out test or model ranking."
+  },
+  "stop_rules": [
+    "Stop if dataset hash or case IDs differ.",
+    "Count invalid output and provider failures in the accuracy denominator.",
+    "Do not publish this development fixture as a model benchmark."
+  ]
+}

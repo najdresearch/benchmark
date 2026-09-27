@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "kind": "dataset_manifest",
+  "id": "arabic-support-routing",
+  "version": "1.0.0",
+  "description": "Eight original synthetic Arabic support-routing development cases.",
+  "split": "development",
+  "source": {
+    "url": "https://github.com/najdresearch/datasets",
+    "revision": "support-template-v1",
+    "method": "Deterministic original templates; no customer data."
+  },
+  "rights": {
+    "license": "CC0-1.0",
+    "evidence_url": "https://github.com/najdresearch/datasets/blob/main/examples/arabic-support-routing-v1/README.md"
+  },
+  "cases": {
+    "path": "cases.jsonl",
+    "sha256": "f0f6a0ef3d41af62b626aa67aa9e31cef5341bfe2a3ad8b236f671e717bcf66c",
+    "count": 8
+  },
+  "case_ids": [
+    "support-dev-01",
+    "support-dev-02",
+    "support-dev-03",
+    "support-dev-04",
+    "support-dev-05",
+    "support-dev-06",
+    "support-dev-07",
+    "support-dev-08"
+  ],
+  "created_at": "2026-09-27T00:00:00Z"
+}

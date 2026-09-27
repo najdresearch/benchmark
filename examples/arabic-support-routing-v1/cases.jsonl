@@ -1,0 +1,8 @@
+{"id": "support-dev-01", "label": "billing", "prompt": "ظهر مبلغ العملية مرتين في فاتورتي، أحتاج مراجعة الفاتورة."}
+{"id": "support-dev-02", "label": "billing", "prompt": "أبغى نسخة من فاتورتي الضريبية للطلب الأخير."}
+{"id": "support-dev-03", "label": "delivery", "prompt": "طلبي متأخر، وين وصلت الشحنة؟"}
+{"id": "support-dev-04", "label": "delivery", "prompt": "أبي أعدل عنوان توصيل الطلب قبل ما يطلع من المستودع."}
+{"id": "support-dev-05", "label": "returns", "prompt": "وصلني المنتج وأبغى أرجعه، كيف أبدأ طلب الإرجاع؟"}
+{"id": "support-dev-06", "label": "returns", "prompt": "المقاس ما ناسبني وأحتاج أستبدله."}
+{"id": "support-dev-07", "label": "handoff", "prompt": "أحتاج أكلم موظف خدمة العملاء مباشرة."}
+{"id": "support-dev-08", "label": "handoff", "prompt": "الموضوع ما انحل، حولني إلى المشرف لو سمحت."}

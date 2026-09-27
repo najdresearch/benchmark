@@ -22,3 +22,12 @@ Use a branch and submit a pull request explaining what changed, why, tests run a
 | Documentation | Copyable commands and an explicit distinction between implemented and planned behavior |
 
 Report data or scoring problems with source/case IDs and a reproducible explanation using public material. Keep proposed corrections separate from immutable historical releases. Report security issues privately using the repository's security policy where available; never post secrets publicly.
+
+## Shared contract changes
+
+Read [shared contracts v1](docs/shared-contracts-v1.md). This repository is the schema
+owner. Run `uv run pytest -q`, `uv run ruff check .`, and both `najd-contract` validation
+commands for changed fixtures. Tests must cover wrong/invalid outputs, provider failures,
+case accounting and digest tampering. Keep mock result bundles labeled `.fixture.json`.
+After merging a schema change, consumers must pin its exact commit and schema hashes;
+never edit their vendored copies independently.
