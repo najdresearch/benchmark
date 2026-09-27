@@ -8,7 +8,8 @@ Versioned task definitions, scoring code, baselines and reproducible reports for
 |---|---|
 | ArabicMMLU answer-key task | Implemented: validates and scores the frozen 104-case subset |
 | Score saved responses with the CLI | Implemented; exact dataset hash required |
-| Local/remote OpenAI-compatible model execution | Planned shared runner; currently implemented in Arena's legacy runtime |
+| Decision-model development pack | Implemented: paired EN/AR cases, strict scorer, floor baseline and loopback-only endpoint runner |
+| General local/remote OpenAI-compatible model execution | Planned shared runner; currently implemented in Arena's legacy runtime |
 | Arabic customer-support version comparison | Next task pack; not implemented |
 | General multi-task scorecards and reports | Contract defined; remaining implementations planned |
 
@@ -45,3 +46,7 @@ Local CLI reports are for development and cannot be uploaded as Arena-publishabl
 ## Next milestone
 
 A reviewed task definition, baseline and deterministic scorer for the internal Arabic customer-support pilot, followed by an OpenAI-compatible runner and parity tests with Arena's managed worker. Preserve prompts, thinking settings and harnesses as separate configurations.
+
+## Local decision-model setup
+
+A separate [development task guide](docs/tasks/decision-pilot-dev-v0.1.md) documents the new strict decision scorer and loopback endpoint runner. Saved-response parity covers the ten original pilot configurations. The general remote runner and Arena worker integration remain planned.
