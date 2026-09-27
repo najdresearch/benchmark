@@ -6,9 +6,9 @@
 
 Najd should let a verified organization submit an endpoint, watch an evaluation run, and inspect a reproducible result. A public reader should see what was measured and which evidence supports a ranking.
 
-The datasets repository already pins the `najd-benchmark@2026.09.14` release: 5,717 certified cases and 372 quarantined cases. The certified split is public. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. Review annotations are not required and do not affect task eligibility.
+The datasets repository already pins the `najd-benchmark@2026.09.27.1` release: 6,089 cases in one public default configuration. The benchmark repository now has its first executable task scorer. The Arena repository contains a local evaluation runtime and work in progress on a web app and worker. The complete aggregate is not yet owned by this repository. No overall score should be described as independently certified until the gates below pass. Review annotations are not required and do not affect task eligibility.
 
-Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/cb30c1c9e46c62f691380c3269885cdb8f22f52b/datasets/najd-benchmark/2026.09.14>.
+Published dataset: <https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569/datasets/najd-benchmark/2026.09.27.1>.
 
 ```mermaid
 flowchart LR
@@ -29,11 +29,11 @@ Arena must pin a benchmark package version and dataset revision for each run. It
 
 ## First public text score
 
-The first score uses only the certified cases in the pinned public release. It is an **open, reproducible text score**, with a breakdown by task and source. Because inputs and labels are public, the score cannot establish that a model has not seen them during training. The leaderboard must state that limit beside the score.
+The first score uses the pinned public release. It is an **open, reproducible text score**, with a breakdown by task and source. Because inputs and labels are public, the score cannot establish that a model has not seen them during training. The leaderboard must state that limit beside the score.
 
 | Rule | First-version decision |
 |---|---|
-| Included cases | Certified split only; quarantine excluded |
+| Included cases | All 6,089 cases; task-specific scorers select their declared case IDs |
 | Eligibility | Complete canonical run on the full frozen selection, with all required grades and a frozen judge profile |
 | Headline | One `Najd Text` score plus task and source breakdowns; score formula and task weights versioned before runs count |
 | Attempts | One scored response per case; retries only for transport failure and recorded separately |
@@ -64,7 +64,7 @@ Secrets never enter run artifacts or public reports. The worker needs a short-li
 | Open reproduction | Public, pinned Hugging Face release | Anyone can inspect and rerun the protocol; training exposure is possible |
 | Controlled evaluation | Separately approved, access-controlled holdout | Tests generalization under a disclosed private-evaluation protocol |
 
-These lanes never share a leaderboard or a score name. A future controlled lane requires rights review, independently checked labels, leakage controls, a disclosed governance policy, and a plan for refreshing cases. Do not use employer material or the 372 quarantined cases to populate it.
+These lanes never share a leaderboard or a score name. A future controlled lane requires rights review, independently checked labels, leakage controls, a disclosed governance policy, and a plan for refreshing cases. Do not use employer material or already-public evaluation cases to populate it.
 
 ## Milestones and stop rules
 

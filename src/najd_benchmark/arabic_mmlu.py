@@ -1,4 +1,4 @@
-"""ArabicMMLU subset from the certified Najd text release.
+"""ArabicMMLU subset from the unified Najd text release.
 
 This task accepts one Latin answer key or a JSON object with one answerKey field.
 It scores response format as part of the task, so explanations and guessed option
@@ -13,12 +13,12 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from .release import CASES_SHA256, DATASET_REVISION  # noqa: F401
+
 SOURCE_ID = "arabicmmlu"
 TASK_VERSION = "arabic-mmlu-key-v1"
-DATASET_REVISION = "43674ef228c1461d6fd34e20c20f51efcbdce56d"
 CASE_COUNT = 104
 CASE_IDS_SHA256 = "f65459ada9049628c8c676a8c7d51a2b16736cdab67743a80a64a05b0ea19b41"
-CASES_SHA256 = "149e6815a29434a462e9d1f8f3ccbb21a142c79848947ad20c19b9639c72c081"
 _KEY = re.compile(r"[A-E]")
 SYSTEM_INSTRUCTION = (
     "Answer the Arabic multiple-choice question. Return only the Latin letter "
@@ -36,8 +36,6 @@ def validate_cases(cases: Iterable[Mapping[str, Any]]) -> list[Mapping[str, Any]
     if id_hash != CASE_IDS_SHA256:
         raise ValueError("ArabicMMLU case IDs differ from the frozen task")
     for case in selected:
-        if case.get("audit_status") != "certified":
-            raise ValueError(f"non-certified task case: {case['id']}")
         expected = case["expected"]
         options = expected.get("options")
         if not isinstance(options, list) or not 2 <= len(options) <= 5:

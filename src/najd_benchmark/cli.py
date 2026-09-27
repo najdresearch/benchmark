@@ -21,6 +21,6 @@ def main() -> None:
     args = parser.parse_args()
     raw = args.cases.read_bytes()
     if hashlib.sha256(raw).hexdigest() != CASES_SHA256:
-        parser.error("cases file does not match the pinned certified release")
+        parser.error("cases file does not match the pinned release")
     report = score_responses(_read_jsonl(args.cases), _read_jsonl(args.responses))
     print(json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2))

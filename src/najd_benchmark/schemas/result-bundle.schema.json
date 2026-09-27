@@ -1,0 +1,766 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://najdresearch.com/contracts/v1/result-bundle.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "result_bundle"
+    },
+    "dataset_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "kind": {
+          "const": "dataset_manifest"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "development",
+            "test"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string",
+              "minLength": 1,
+              "format": "uri"
+            },
+            "revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "method": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "url",
+            "revision",
+            "method"
+          ]
+        },
+        "rights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "license": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence_url": {
+              "type": "string",
+              "minLength": 1,
+              "format": "uri"
+            }
+          },
+          "required": [
+            "license",
+            "evidence_url"
+          ]
+        },
+        "cases": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+\\.jsonl$"
+            },
+            "sha256": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "path",
+            "sha256",
+            "count"
+          ]
+        },
+        "case_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "created_at": {
+          "type": "string",
+          "minLength": 1,
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "description",
+        "split",
+        "source",
+        "rights",
+        "cases",
+        "case_ids",
+        "created_at"
+      ]
+    },
+    "task_pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "kind": {
+          "const": "task_pack"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cases_sha256": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "cases_sha256"
+          ]
+        },
+        "task_type": {
+          "enum": [
+            "classification",
+            "text_generation",
+            "tool_decision",
+            "retrieval",
+            "ocr",
+            "speech"
+          ]
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "system_prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_format": {
+          "enum": [
+            "json_label",
+            "text",
+            "tool_calls"
+          ]
+        },
+        "harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ]
+        },
+        "scorer": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "metrics"
+          ]
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32768
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "max_attempts": {
+              "const": 1
+            }
+          },
+          "required": [
+            "max_tokens",
+            "timeout_seconds",
+            "max_attempts"
+          ]
+        },
+        "baseline": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "strategy",
+            "description"
+          ]
+        },
+        "uncertainty": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "limitations": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "method",
+            "limitations"
+          ]
+        },
+        "stop_rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "description",
+        "dataset",
+        "task_type",
+        "labels",
+        "system_prompt",
+        "output_format",
+        "harness",
+        "scorer",
+        "budget",
+        "baseline",
+        "uncertainty",
+        "stop_rules"
+      ]
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "local_cli",
+            "arena_managed"
+          ]
+        },
+        "organization_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visibility": {
+          "const": "private"
+        },
+        "benchmark_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benchmark_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_requested": {
+          "type": "string",
+          "minLength": 1
+        },
+        "models_returned": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "endpoint_kind": {
+          "enum": [
+            "local",
+            "remote"
+          ]
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "started_at": {
+          "type": "string",
+          "minLength": 1,
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": "string",
+          "minLength": 1,
+          "format": "date-time"
+        },
+        "benchmark_source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "organization_id",
+        "visibility",
+        "benchmark_version",
+        "benchmark_revision",
+        "model_requested",
+        "models_returned",
+        "endpoint_kind",
+        "temperature",
+        "started_at",
+        "finished_at",
+        "benchmark_source_sha256"
+      ]
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "invalid_output",
+              "provider_error"
+            ]
+          },
+          "output": {
+            "type": "string"
+          },
+          "expected_label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "predicted_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "latency_ms": {
+            "type": "number",
+            "minimum": 0
+          },
+          "usage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "prompt_tokens": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "completion_tokens": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            },
+            "required": [
+              "prompt_tokens",
+              "completion_tokens"
+            ]
+          },
+          "error_class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "response_sha256": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "media_type": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "path",
+                "sha256",
+                "media_type"
+              ]
+            }
+          }
+        },
+        "required": [
+          "case_id",
+          "status",
+          "output",
+          "expected_label",
+          "predicted_label",
+          "latency_ms",
+          "usage",
+          "error_class",
+          "response_sha256",
+          "artifacts"
+        ]
+      },
+      "minItems": 1
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "case_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "correct": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_outputs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provider_errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accuracy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "grading_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "macro_f1": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "per_label": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "support": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "precision": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "recall": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "f1": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "label",
+              "support",
+              "precision",
+              "recall",
+              "f1"
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              },
+              "predicted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "expected",
+              "predicted",
+              "count"
+            ]
+          }
+        },
+        "accuracy_ci95": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "low": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "method": {
+              "const": "wilson"
+            }
+          },
+          "required": [
+            "low",
+            "high",
+            "method"
+          ]
+        },
+        "latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "p50": {
+              "type": "number",
+              "minimum": 0
+            },
+            "p95": {
+              "type": "number",
+              "minimum": 0
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "method": {
+              "const": "nearest-rank"
+            }
+          },
+          "required": [
+            "p50",
+            "p95",
+            "count",
+            "method"
+          ]
+        },
+        "tokens": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "prompt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "completion": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cases_with_missing_usage": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "prompt",
+            "completion",
+            "cases_with_missing_usage"
+          ]
+        },
+        "cost_usd": {
+          "const": null
+        }
+      },
+      "required": [
+        "case_count",
+        "correct",
+        "invalid_outputs",
+        "provider_errors",
+        "accuracy",
+        "grading_coverage",
+        "macro_f1",
+        "per_label",
+        "confusion_matrix",
+        "accuracy_ci95",
+        "latency_ms",
+        "tokens",
+        "cost_usd"
+      ]
+    },
+    "dataset_manifest_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "task_pack_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "bundle_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "dataset_manifest",
+    "task_pack",
+    "run",
+    "records",
+    "metrics",
+    "dataset_manifest_sha256",
+    "task_pack_sha256",
+    "bundle_sha256"
+  ]
+}

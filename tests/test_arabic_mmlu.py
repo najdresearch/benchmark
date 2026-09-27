@@ -61,6 +61,6 @@ def test_cases_without_review_metadata_are_eligible(monkeypatch):
         arabic_mmlu, "CASE_IDS_SHA256", hashlib.sha256(b"example\n").hexdigest()
     )
     value = copy.deepcopy(CASE)
-    value["audit_status"] = "certified"
+    value.pop("audit_status", None)
     value.pop("review_status", None)
     assert validate_cases([value]) == [value]

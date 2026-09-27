@@ -21,7 +21,7 @@ uv run pytest
 uv run najd-benchmark --cases /path/to/cases.jsonl --responses /path/to/responses.jsonl
 ```
 
-Download `datasets/najd-benchmark/2026.09.14/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/43674ef228c1461d6fd34e20c20f51efcbdce56d). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
+Download `datasets/najd-benchmark/2026.09.27/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
 
 Current case-file SHA-256: `149e6815a29434a462e9d1f8f3ccbb21a142c79848947ad20c19b9639c72c081`.
 This revision removes review annotations without changing case content. The 104-case selection and scorer are unchanged. Missing/invalid outputs score zero; unknown or duplicate response IDs fail validation. Annotations do not control eligibility.
@@ -50,3 +50,26 @@ A reviewed task definition, baseline and deterministic scorer for the internal A
 ## Local decision-model setup
 
 A separate [development task guide](docs/tasks/decision-pilot-dev-v0.1.md) documents the new strict decision scorer and loopback endpoint runner. Saved-response parity covers the ten original pilot configurations. The general remote runner and Arena worker integration remain planned.
+
+## Unified dataset release
+
+The current pin contains all 6,089 cases without audit-status or review-status fields. The ArabicMMLU task still selects the same 104 case IDs and uses the same scoring contract. This package does not yet implement a full-suite endpoint runner. Previously generated reports retain their original dataset revisions.
+
+## File-based tasks and answer corrections
+
+The package provides a bounded virtual filesystem for six public fixture tasks and a
+strict scorer for four corrected Absher items. See [the protocol and scoring guide](docs/fixture-tasks.md).
+Arena uses the same implementation for local runs and hosted workers; tool transcripts
+and output files are retained as evidence. This harness condition is distinct from raw
+single-turn inference and Pi.
+
+## Shared contracts (Step 2)
+
+[Contracts v1](docs/shared-contracts-v1.md) define dataset manifests, task packs and
+private result bundles. `najd-contract` validates them and runs the small Arabic support
+routing example against local or remote OpenAI-compatible endpoints. Arena has an
+admin-only preview for these bundles; CLI results cannot become public Arena results.
+
+## Published System One experiment
+
+[Same-host CPU/CUDA workflow](docs/remote-cpu-gpu-smoke.md) fetches the immutable public System One draft, verifies its release lock, and evaluates the 216-case natural-development pack. It remains a separate research runner; no Arena result publication is implied.
