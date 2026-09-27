@@ -53,7 +53,7 @@ def test_prompt_includes_ordered_options():
     assert build_messages(case)[1]["content"] == "Question?\n\nA. one\nB. two\nC. three"
 
 
-def test_review_status_does_not_control_eligibility(monkeypatch):
+def test_cases_without_review_metadata_are_eligible(monkeypatch):
     from najd_benchmark import arabic_mmlu
 
     monkeypatch.setattr(arabic_mmlu, "CASE_COUNT", 1)
@@ -62,5 +62,5 @@ def test_review_status_does_not_control_eligibility(monkeypatch):
     )
     value = copy.deepcopy(CASE)
     value["audit_status"] = "certified"
-    value["review_status"] = "not_reviewed"
+    value.pop("review_status", None)
     assert validate_cases([value]) == [value]

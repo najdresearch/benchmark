@@ -15,10 +15,10 @@ from typing import Any
 
 SOURCE_ID = "arabicmmlu"
 TASK_VERSION = "arabic-mmlu-key-v1"
-DATASET_REVISION = "cb30c1c9e46c62f691380c3269885cdb8f22f52b"
+DATASET_REVISION = "43674ef228c1461d6fd34e20c20f51efcbdce56d"
 CASE_COUNT = 104
 CASE_IDS_SHA256 = "f65459ada9049628c8c676a8c7d51a2b16736cdab67743a80a64a05b0ea19b41"
-CASES_SHA256 = "b8b52ded0f6731b7a4764a90476edfe643f46d6a286096bab02b7ed189af94f6"
+CASES_SHA256 = "149e6815a29434a462e9d1f8f3ccbb21a142c79848947ad20c19b9639c72c081"
 _KEY = re.compile(r"[A-E]")
 SYSTEM_INSTRUCTION = (
     "Answer the Arabic multiple-choice question. Return only the Latin letter "
