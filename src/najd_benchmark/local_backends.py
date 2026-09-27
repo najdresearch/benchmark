@@ -34,6 +34,19 @@ def load(system, device=None, precision="native"):
         if precision == "fp32":
             model.amp_enabled = False
             model.dtype = torch.float32
+        if device and model.device.type != device:
+            raise RuntimeError("Requested device unavailable; refusing silent fallback")
+        print(
+            json.dumps(
+                {
+                    "device": str(model.device),
+                    "weight_dtype": str(next(model.model.parameters()).dtype),
+                    "autocast": model.amp_enabled,
+                    "autocast_dtype": str(model.dtype),
+                }
+            ),
+            flush=True,
+        )
 
         def predict(state, questions):
             text = canonical(state)
