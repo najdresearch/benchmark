@@ -53,3 +53,11 @@ Local evidence is saved under `build/overnight-checkpoints/large/large-results/d
 - [Pinned structured wrapper](https://github.com/vllm-project/vllm/blob/e9757321527ca1ecd514c07c1418dd2c53da3d19/examples/features/structured_diffusion/structured_server.py)
 - [DiffusionGemma model](https://huggingface.co/google/diffusiongemma-26B-A4B-it)
 - [Najd public dataset](https://huggingface.co/datasets/najdresearch/system-one/tree/84bf0a30ced090e2b552beafa5f0f3c9a3665c0c)
+
+## Full-suite coverage audit
+
+The completed run has valid responses for all **3,337 supported cases**. The pinned wrapper requires 2–26 alternatives. ArBanking77 (77), MASSIVE (60), and Arabic function calling (28) exceed that limit; three agent-diagnostic cases have only one option. These **1,847 unsupported cases** remain visible in the original reports as transport failures or unattempted cases after circuit breaks. A separate post-run capability audit documents the source-based eligibility rule; it does not rewrite the failed attempts or claim all 5,184 cases were evaluated. Future runs apply the capability filter before inference.
+
+Concurrency 1/4/16 completed 648 requests each with zero errors. Complete-response p50/p95/p99 were 70/76/95 ms, 133/183/246 ms, and 279/732/760 ms respectively. These are loopback serialized-adapter measurements on the A100 host; repeat agreement is not perfect, so a fixed seed must not be described as bitwise deterministic.
+
+The large-model rental was deleted after all 66 remote artifact files matched their local SHA-256 hashes. Qwen/SGLang did not reach readiness: an inherited FlashInfer JIT-cache package still conflicted with the isolated FlashInfer version. Preserve that as an environment failure, not a model score.

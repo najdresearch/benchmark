@@ -28,10 +28,15 @@ def main():
     p.add_argument("--credential-file", type=Path)
     p.add_argument("--types", nargs="+", default=["choice", "noul", "score"])
     p.add_argument("--max-options", type=int, default=0)
+    p.add_argument("--min-options", type=int, default=0)
     p.add_argument("--concurrency", type=int, choices=[1, 4, 16], default=1)
     p.add_argument("--pack-seconds", type=int, default=3600)
     p.add_argument("--total-seconds", type=int, default=21600)
     a = p.parse_args()
+    # Pinned structured-diffusion wrapper maps alternatives to single A-Z labels.
+    if a.model == "diffusiongemma_remote":
+        a.min_options = max(a.min_options, 2)
+        a.max_options = min(a.max_options or 26, 26)
     # This exact public draft was cleared and published before this evaluation.
     if a.revision != "84bf0a30ced090e2b552beafa5f0f3c9a3665c0c":
         p.error("Register a new immutable release explicitly before evaluating it")
@@ -131,6 +136,7 @@ def main():
             for c in all_cases
             if all(
                 q["type"] in a.types
+                and (q["type"] == "noul" or len(q["criteria"]) >= a.min_options)
                 and (
                     not a.max_options or q["type"] == "noul" or len(q["criteria"]) <= a.max_options
                 )
