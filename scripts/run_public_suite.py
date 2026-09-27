@@ -33,10 +33,11 @@ def main():
     p.add_argument("--pack-seconds", type=int, default=3600)
     p.add_argument("--total-seconds", type=int, default=21600)
     a = p.parse_args()
-    # Both pinned runtimes map 2–26 alternatives to single A-Z labels.
+    # Pinned runtimes use a bounded single-letter answer alphabet.
     if a.model in {"diffusiongemma_remote", "semif"}:
         a.min_options = max(a.min_options, 2)
-        a.max_options = min(a.max_options or 26, 26)
+        limit = 16 if a.model == "semif" else 26
+        a.max_options = min(a.max_options or limit, limit)
     # This exact public draft was cleared and published before this evaluation.
     if a.revision != "84bf0a30ced090e2b552beafa5f0f3c9a3665c0c":
         p.error("Register a new immutable release explicitly before evaluating it")
