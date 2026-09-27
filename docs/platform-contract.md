@@ -1,3 +1,5 @@
+> Repository ownership and publication policy are superseded by [evaluation contract v2](evaluation-contract-v2.md). Historical scoring definitions below remain protocol-specific.
+
 # Najd benchmarking platform contract
 
 ## Outcome and current state
