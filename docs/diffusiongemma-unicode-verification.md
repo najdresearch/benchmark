@@ -21,6 +21,19 @@ The failed attempt remains in the saved artifacts. Its transport errors do not e
 
 A separate Qwen/SGLang environment had mismatched FlashInfer packages, then mismatched Torch/TorchVision packages. Repairs are isolated from the active DiffusionGemma runtime and require a separate preflight and successful inference before scoring.
 
+## LocalJev compatibility is a separate limitation
+
+Two direct HTTP probes confirmed why unmodified LocalJev cannot use this diffusion backend through ordinary Chat Completions:
+
+| Probe | Runtime response |
+|---|---|
+| LocalJev-style temperature and seed | HTTP 400: these sampling parameters are unsupported for diffusion models |
+| Remove those controls, keep JSON-schema response format | HTTP 400: structured outputs are unsupported for diffusion language models |
+
+The structured diffusion wrapper uses a different read mechanism and is successfully evaluating the dataset. This does not make ordinary constrained Chat Completions compatible. Do not silently remove constraints and present that as the same LocalJev configuration. Keep LocalJev + DiffusionGemma marked unsupported on this pinned runtime; LocalJev + Qwen remains a separate candidate.
+
+Raw server responses are retained in `large-results/localjev-diffusion-compatibility.json` and `large-results/localjev-diffusion-schema-compatibility.json` in the local checkpoints.
+
 ## Frozen configuration
 
 | Item | Value |
