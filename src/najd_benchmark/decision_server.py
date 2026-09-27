@@ -154,6 +154,7 @@ def main():
             "localjev_remote",
             "diffusiongemma_remote",
             "sev",
+            "sev_choice_noul",
             "jev_api",
             "span_api",
             "typellm_direct",
@@ -332,14 +333,15 @@ def main():
             with torch.inference_mode():
                 raw = model.predict(state=canonical(state), questions=questions)
             return typed_answers(questions, raw), raw
-    elif args.system == "sev":
+    elif args.system in ("sev", "sev_choice_noul"):
         from sev_preview import SevPreview
 
         model = SevPreview(args.model_path, device=args.device or "cpu")
 
         def predict(state, questions):
-            if any(q["type"] != "choice" for q in questions.values()):
-                raise ValueError("Sev preview supports only choice in this benchmark")
+            allowed = {"choice"} if args.system == "sev" else {"choice", "noul"}
+            if any(q["type"] not in allowed for q in questions.values()):
+                raise ValueError("Question type outside this Sev adapter configuration")
             raw = model.decide(canonical(state), questions)
             if raw.get("meta", {}).get("state_truncated"):
                 raise ValueError("State would be truncated")
