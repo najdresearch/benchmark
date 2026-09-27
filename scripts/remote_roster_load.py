@@ -184,6 +184,7 @@ for spec in plan:
                     spec["full_suite"], "--revision", a.revision,
                     "--output", str(out / "full-quality"), "--model", name,
                     "--total-seconds", "3600", "--pack-seconds", "900",
+                    "--types", *spec.get("types", ["choice", "noul", "score"]),
                 ]
                 if spec.get("max_options"):
                     command += ["--max-options", str(spec["max_options"])]
