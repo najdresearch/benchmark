@@ -23,11 +23,43 @@ The prior filtered run selected 4,413 cases before token preflight. It received
 to oversized question tails and 21 to state truncation. Missing cases after
 the error circuit must not be treated as model mistakes.
 
-The corrected path now exposes a read-only loopback capability endpoint, filters
+The corrected path exposes a read-only loopback capability endpoint, filters
 unsupported cases before inference, records a per-case capability audit, and
-distinguishes HTTP 422/4xx/5xx from network errors. It still needs a real Sev
-inference rerun before reporting a new quality result. Do not compare the old
-2,418 valid responses as if they came from a completed 2,418-case run.
+distinguishes HTTP 422/4xx/5xx from network errors. The old 2,418 valid
+responses remain historical evidence and are not reused as the rerun.
+
+## Verified GPU rerun
+
+On September 28, 2026, the corrected code (`59677b5`) ran on a newly rented
+A100-SXM4-80GB with the same frozen public dataset, Sev model snapshot, and
+pinned runtime. All **2,418/2,418 supported cases** returned valid responses;
+**1,012/2,418** matched the frozen labels. All eleven pack reports were
+produced, including explicit zero-eligible reports for the four packs outside
+Sev's context. There were no request errors or error circuits. These are
+development results for Sev's supported subset, not an all-task ranking.
+
+| Pack | Correct / supported | Valid / supported |
+|---|---:|---:|
+| Controlled development | 152/360 | 360/360 |
+| Controlled validation | 235/510 | 510/510 |
+| Controlled reserved evaluation | 343/810 | 810/810 |
+| Natural development | 58/168 | 168/168 |
+| Absher diagnostic | 125/379 | 379/379 |
+| Agent diagnostic | 36/41 | 41/41 |
+| AraTrust diagnostic | 63/150 | 150/150 |
+
+The natural-development language slices were English 23/56, MSA 18/56, and
+Saudi Arabic 17/56. Complete-response latency at concurrency 1 was p50
+39.8 ms, p95 56.9 ms, and p99 64.8 ms on that 168-case subset. This rental was
+a new host with a different CPU/RAM allocation from the prior native roster;
+do not merge its latency into same-machine comparisons.
+
+All **39** remote result/log files matched local SHA-256 hashes before rental
+deletion. The local evidence is in `build/sev-rerun-2026-09-28/`, including
+`results/sev-capability-filtered/`, `remote-hash-verification.json`,
+`rental-deleted.json`, and the runtime package/hardware manifest. After deletion,
+RunPod reported no running pods. The account balance changed from $44.9631 to
+$44.5259 across the run, roughly $0.44 including any non-pod charges.
 
 Reproduce the no-inference audit with `scripts/audit_sev_capability.py` using
 the pinned public dataset and model snapshot. Local output is saved at
