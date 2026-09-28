@@ -71,6 +71,28 @@ def run(cases, base_url, model, timeout=10.0, max_seconds=120.0):
                 if choice.get("finish_reason") == "stop" and valid(case, row["output"])
                 else "invalid"
             )
+        except urllib.error.HTTPError as exc:
+            row["http_status"] = exc.code
+            row["status"] = (
+                "unsupported"
+                if exc.code == 422
+                else "redirect_refused"
+                if 300 <= exc.code < 400
+                else "invalid_request"
+                if 400 <= exc.code < 500
+                else "server_error"
+            )
+            try:
+                error = json.loads(exc.read(4096)).get("error", {})
+                if error.get("code") in {
+                    "unsupported_question_type",
+                    "question_tokens_exceed_context",
+                    "state_truncated",
+                    "invalid_model_schema",
+                }:
+                    row["error_code"] = error["code"]
+            except (ValueError, TypeError, AttributeError):
+                pass
         except (TimeoutError, urllib.error.URLError) as exc:
             row["status"] = (
                 "timeout"

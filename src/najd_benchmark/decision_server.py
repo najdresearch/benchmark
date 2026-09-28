@@ -44,7 +44,29 @@ def typed_answers(questions, raw):
     return output
 
 
-def handler_for(model_id, predict):
+class UnsupportedDecision(ValueError):
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__(reason)
+
+
+def sev_capability(model, state, questions, allowed, validate_questions):
+    if any(q["type"] not in allowed for q in questions.values()):
+        return {"supported": False, "reason": "unsupported_question_type"}
+    try:
+        validate_questions(questions, model.max_questions)
+        _, truncated = model._encode(canonical(state), questions)
+    except ValueError as exc:
+        reason = (
+            "question_tokens_exceed_context"
+            if "too small for" in str(exc)
+            else "invalid_model_schema"
+        )
+        return {"supported": False, "reason": reason}
+    return {"supported": not truncated, "reason": "state_truncated" if truncated else None}
+
+
+def handler_for(model_id, predict, capability=None):
     lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
@@ -66,8 +88,11 @@ def handler_for(model_id, predict):
                 self.reply(404, {"error": {"message": "Unknown path"}})
 
         def do_POST(self):
-            if self.path != "/v1/chat/completions":
+            if self.path not in ("/v1/chat/completions", "/v1/decision-capability"):
                 self.reply(404, {"error": {"message": "Unknown path"}})
+                return
+            if self.path == "/v1/decision-capability" and capability is None:
+                self.reply(404, {"error": {"message": "Capability audit unavailable"}})
                 return
             try:
                 n = int(self.headers.get("Content-Length", "0"))
@@ -100,12 +125,14 @@ def handler_for(model_id, predict):
 
                 if not valid(data, first_option(data)):
                     raise ValueError("Invalid question schema")
+                state = json.loads(canonical(data["state"]))
+                questions = json.loads(canonical(data["questions"]))
+                if self.path == "/v1/decision-capability":
+                    self.reply(200, capability(state, questions))
+                    return
                 started = time.perf_counter()
                 with lock:
-                    output, raw = predict(
-                        json.loads(canonical(data["state"])),
-                        json.loads(canonical(data["questions"])),
-                    )
+                    output, raw = predict(state, questions)
                 if not valid(data, output):
                     raise ValueError("Model output failed validation")
                 self.reply(
@@ -128,6 +155,11 @@ def handler_for(model_id, predict):
                             "serialization": "sorted-object-keys-readable-unicode-v1",
                         },
                     },
+                )
+            except UnsupportedDecision as exc:
+                self.reply(
+                    422,
+                    {"error": {"code": exc.reason, "message": "Decision outside model capability"}},
                 )
             except (ValueError, KeyError, TypeError, IndexError):
                 self.reply(400, {"error": {"message": "Invalid or unsupported decision request"}})
@@ -335,16 +367,21 @@ def main():
             return typed_answers(questions, raw), raw
     elif args.system in ("sev", "sev_choice_noul"):
         from sev_preview import SevPreview
+        from sev_preview.runtime import validate_questions
 
         model = SevPreview(args.model_path, device=args.device or "cpu")
 
-        def predict(state, questions):
+        def capability(state, questions):
             allowed = {"choice"} if args.system == "sev" else {"choice", "noul"}
-            if any(q["type"] not in allowed for q in questions.values()):
-                raise ValueError("Question type outside this Sev adapter configuration")
+            return sev_capability(model, state, questions, allowed, validate_questions)
+
+        def predict(state, questions):
+            support = capability(state, questions)
+            if not support["supported"]:
+                raise UnsupportedDecision(support["reason"])
             raw = model.decide(canonical(state), questions)
             if raw.get("meta", {}).get("state_truncated"):
-                raise ValueError("State would be truncated")
+                raise UnsupportedDecision("state_truncated")
             return typed_answers(questions, raw), raw
     else:
         from gliner2 import AutoExtractor
@@ -369,7 +406,12 @@ def main():
             return normalize(questions, raw), raw
 
     print("READY", args.system, flush=True)
-    DecisionHTTPServer(("127.0.0.1", args.port), handler_for(args.system, predict)).serve_forever()
+    DecisionHTTPServer(
+        ("127.0.0.1", args.port),
+        handler_for(
+            args.system, predict, capability if args.system in ("sev", "sev_choice_noul") else None
+        ),
+    ).serve_forever()
 
 
 if __name__ == "__main__":

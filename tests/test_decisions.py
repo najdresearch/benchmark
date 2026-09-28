@@ -82,6 +82,14 @@ def test_local_endpoint_success_invalid_timeout_and_budget(case):
                 self.send_header("Location", "http://example.com")
                 self.end_headers()
                 return
+            if mode in ("unsupported", "server_error"):
+                status = 422 if mode == "unsupported" else 500
+                data = json.dumps({"error": {"code": "state_truncated"}}).encode()
+                self.send_response(status)
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
             content = '{"eligible": false}' if mode != "invalid" else '{"eligible": "false"}'
             data = json.dumps(
                 {"choices": [{"finish_reason": "stop", "message": {"content": content}}]}
@@ -104,7 +112,14 @@ def test_local_endpoint_success_invalid_timeout_and_budget(case):
         assert ok[0]["elapsed_ms"] > 0
         assert len(ok[0]["request_sha256"]) == 64
         assert list(run([case], url, "invalid"))[0]["status"] == "invalid"
-        assert list(run([case], url, "redirect"))[0]["status"] == "transport_error"
+        assert list(run([case], url, "redirect"))[0]["status"] == "redirect_refused"
+        unsupported = list(run([case], url, "unsupported"))[0]
+        assert (unsupported["status"], unsupported["http_status"], unsupported["error_code"]) == (
+            "unsupported",
+            422,
+            "state_truncated",
+        )
+        assert list(run([case], url, "server_error"))[0]["status"] == "server_error"
         second = copy.deepcopy(case)
         second["id"] = "P02-ar"
         rows = list(run([case, second], url, "slow", timeout=0.02, max_seconds=0.01))

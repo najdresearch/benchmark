@@ -12,6 +12,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from najd_benchmark.decision_capability import decision_capability
 from najd_benchmark.decision_cli import run
 from najd_benchmark.decision_server import canonical, typed_answers
 from najd_benchmark.decisions import load_pack, output_schema, request_payload, score, valid
@@ -144,8 +145,27 @@ def main():
                 for q in c["questions"].values()
             )
         ]
+        capability_rows = []
+        if a.model in {"sev", "sev_choice_noul"}:
+            supported = []
+            for case in cases:
+                result = decision_capability(case, a.base_url, a.model)
+                capability_rows.append(
+                    {
+                        "case_id": case["id"],
+                        "supported": result["supported"],
+                        "reason": result.get("reason"),
+                    }
+                )
+                if result["supported"]:
+                    supported.append(case)
+            cases = supported
         dest = a.output / pack
         dest.mkdir(parents=True)
+        if capability_rows:
+            with (dest / "capability-audit.jsonl").open("w") as audit:
+                for row in capability_rows:
+                    audit.write(json.dumps(row, ensure_ascii=False) + "\n")
         rows = []
         begin = time.monotonic()
         iterator = iter(cases)
@@ -201,6 +221,15 @@ def main():
             observed_api_cost_usd=cost,
             publication_eligible=False,
         )
+        if capability_rows:
+            report["capability_exclusions"] = {
+                reason: sum(
+                    row["reason"] == reason for row in capability_rows if not row["supported"]
+                )
+                for reason in sorted(
+                    {row["reason"] for row in capability_rows if not row["supported"]}
+                )
+            }
         lat = sorted(r["elapsed_ms"] for r in rows if r["status"] == "ok")
         report["observed_p99_ms"] = lat[math.ceil(0.99 * len(lat)) - 1] if lat else None
         (dest / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
