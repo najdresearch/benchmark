@@ -41,3 +41,14 @@ Jev + LFM was a tool-argument extraction pipeline. This pack tests decisions and
 Development labels remain independently unreviewed. B04 ambiguity is tracked without editing frozen gold. Publish only a clearly labeled diagnostic report until bilingual review, adapter audit and held-out evaluation are complete.
 
 Sources: [LocalJev](https://github.com/githubnext/localjev), [TypeLLM](https://github.com/TypeLLM/TypeLLM), [structured DiffusionGemma readout](https://github.com/vllm-project/vllm/tree/e9757321527ca1ecd514c07c1418dd2c53da3d19/examples/features/structured_diffusion), [Needle](https://huggingface.co/Cactus-Compute/needle3), [Qwen base](https://huggingface.co/Qwen/Qwen3.8-27B).
+
+## Post-run concurrency correction
+
+The earlier Qwen, LocalJev, and DiffusionGemma load results passed through a
+single Python prediction lock. Their concurrency-4/16 latency chiefly measures
+that adapter queue. The adapter now allows concurrent upstream HTTP calls for
+those three systems and records `adapter_serialized` in response and report
+metadata. Native model and TypeLLM adapters keep the lock because their loaded
+in-process clients have not been verified thread-safe. This is a protocol
+change: the earlier latency rows remain historical and cannot be mixed with new
+concurrent-upstream measurements. Real concurrent GPU results are still pending.

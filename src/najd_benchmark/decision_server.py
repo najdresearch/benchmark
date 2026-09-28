@@ -6,11 +6,14 @@ import math
 import threading
 import time
 import uuid
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .decisions import valid
 from .local_backends import PINS
 from .native_gliner import MODELS, normalize
+
+CONCURRENT_UPSTREAM_SYSTEMS = frozenset({"qwen_remote", "localjev_remote", "diffusiongemma_remote"})
 
 
 def canonical(value):
@@ -66,7 +69,7 @@ def sev_capability(model, state, questions, allowed, validate_questions):
     return {"supported": not truncated, "reason": "state_truncated" if truncated else None}
 
 
-def handler_for(model_id, predict, capability=None):
+def handler_for(model_id, predict, capability=None, *, serialize_predictions=True):
     lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
@@ -131,7 +134,7 @@ def handler_for(model_id, predict, capability=None):
                     self.reply(200, capability(state, questions))
                     return
                 started = time.perf_counter()
-                with lock:
+                with lock if serialize_predictions else nullcontext():
                     output, raw = predict(state, questions)
                 if not valid(data, output):
                     raise ValueError("Model output failed validation")
@@ -153,6 +156,7 @@ def handler_for(model_id, predict, capability=None):
                             "raw": raw,
                             "elapsed_ms": (time.perf_counter() - started) * 1000,
                             "serialization": "sorted-object-keys-readable-unicode-v1",
+                            "adapter_serialized": serialize_predictions,
                         },
                     },
                 )
@@ -409,7 +413,10 @@ def main():
     DecisionHTTPServer(
         ("127.0.0.1", args.port),
         handler_for(
-            args.system, predict, capability if args.system in ("sev", "sev_choice_noul") else None
+            args.system,
+            predict,
+            capability if args.system in ("sev", "sev_choice_noul") else None,
+            serialize_predictions=args.system not in CONCURRENT_UPSTREAM_SYSTEMS,
         ),
     ).serve_forever()
 

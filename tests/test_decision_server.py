@@ -2,6 +2,7 @@ import json
 import threading
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from http.server import ThreadingHTTPServer
 
 import pytest
@@ -90,8 +91,10 @@ def test_sev_capability_checks_context_before_inference():
     questions = {
         "action": {"type": "choice", "instructions": "Choose", "criteria": {"a": "A", "b": "B"}}
     }
+
     def validate(questions, limit):
         return None
+
     model = Model()
     assert sev_capability(model, {"text": "أهلا"}, questions, {"choice"}, validate) == {
         "supported": True,
@@ -174,6 +177,41 @@ def test_unsupported_decision_uses_http_422():
             urllib.request.urlopen(req)
         assert error.value.code == 422
         assert json.load(error.value)["error"]["code"] == "state_truncated"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+def test_remote_adapter_allows_concurrent_upstream_calls():
+    barrier = threading.Barrier(2)
+
+    def predict(state, questions):
+        barrier.wait(timeout=2)
+        return {"x": False}, {"simultaneous": True}
+
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        handler_for("qwen_remote", predict, serialize_predictions=False),
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    case = {"state": {}, "questions": {"x": {"type": "noul", "instructions": "Yes?"}}}
+    body = json.dumps(request_payload(case, "qwen_remote")).encode()
+
+    def call():
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+            body,
+            {"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            return json.load(response)
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(lambda _: call(), range(2)))
+        assert all(r["najd"]["adapter_serialized"] is False for r in results)
     finally:
         server.shutdown()
         server.server_close()

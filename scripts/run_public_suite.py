@@ -14,7 +14,7 @@ from pathlib import Path
 
 from najd_benchmark.decision_capability import decision_capability
 from najd_benchmark.decision_cli import run
-from najd_benchmark.decision_server import canonical, typed_answers
+from najd_benchmark.decision_server import CONCURRENT_UPSTREAM_SYSTEMS, canonical, typed_answers
 from najd_benchmark.decisions import load_pack, output_schema, request_payload, score, valid
 
 
@@ -220,6 +220,7 @@ def main():
             model=a.model,
             observed_api_cost_usd=cost,
             publication_eligible=False,
+            adapter_serialized=None if a.hosted else a.model not in CONCURRENT_UPSTREAM_SYSTEMS,
         )
         if capability_rows:
             report["capability_exclusions"] = {

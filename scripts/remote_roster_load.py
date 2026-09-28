@@ -13,6 +13,7 @@ import urllib.request
 from pathlib import Path
 
 from najd_benchmark.decision_cli import run
+from najd_benchmark.decision_server import CONCURRENT_UPSTREAM_SYSTEMS
 from najd_benchmark.decisions import load_pack, score
 
 p = argparse.ArgumentParser(description=__doc__)
@@ -38,7 +39,10 @@ hardware = {
     "packages": subprocess.check_output([sys.executable, "-m", "pip", "freeze"], text=True),
     "plan": plan,
     "precision": "Per configuration in plan",
-    "scope": "Serialized adapter, no batching; loopback HTTP includes lock queue time",
+    "scope": (
+        "Loopback HTTP includes adapter and upstream time; "
+        "inspect each system's adapter_serialized flag"
+    ),
 }
 (root / "environment.json").write_text(json.dumps(hardware, indent=2))
 for spec in plan:
@@ -164,6 +168,7 @@ for spec in plan:
                     repeats=spec.get("repeats", 3),
                     precision=spec["precision"],
                     device=spec["device"],
+                    adapter_serialized=name not in CONCURRENT_UPSTREAM_SYSTEMS,
                     ready_seconds=ready,
                     duration_seconds=duration,
                     successful_requests_per_second=sum(r["status"] == "ok" for r in rows)
@@ -180,11 +185,22 @@ for spec in plan:
                 )
             if spec.get("full_suite"):
                 command = [
-                    sys.executable, "scripts/run_public_suite.py", "--dataset",
-                    spec["full_suite"], "--revision", a.revision,
-                    "--output", str(out / "full-quality"), "--model", name,
-                    "--total-seconds", "3600", "--pack-seconds", "900",
-                    "--types", *spec.get("types", ["choice", "noul", "score"]),
+                    sys.executable,
+                    "scripts/run_public_suite.py",
+                    "--dataset",
+                    spec["full_suite"],
+                    "--revision",
+                    a.revision,
+                    "--output",
+                    str(out / "full-quality"),
+                    "--model",
+                    name,
+                    "--total-seconds",
+                    "3600",
+                    "--pack-seconds",
+                    "900",
+                    "--types",
+                    *spec.get("types", ["choice", "noul", "score"]),
                 ]
                 if spec.get("max_options"):
                     command += ["--max-options", str(spec["max_options"])]
