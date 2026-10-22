@@ -80,7 +80,7 @@ def parse_label(output: str, labels: list[str]) -> str | None:
         value = json.loads(output)
         if isinstance(value, dict) and set(value) == {"label"} and value["label"] in labels:
             return value["label"]
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, RecursionError):
         pass
     return None
 
@@ -147,6 +147,8 @@ def run(
                 output = data["choices"][0]["message"]["content"]
                 if not isinstance(output, str):
                     raise ValueError("Response content must be text")
+                # A lone surrogate cannot be hashed or canonicalised; fail this case only.
+                output.encode()
                 if isinstance(data.get("model"), str) and data["model"]:
                     models.add(data["model"])
                 for key in usage:

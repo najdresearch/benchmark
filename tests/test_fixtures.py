@@ -57,3 +57,14 @@ def test_corrected_absher_key():
     assert grade({'answer': 'أ'}, 'أ')['score'] == 1
     assert grade({'answer': 'أ'}, 'أ أو ب')['score'] == 0
     assert grade({'answer': 'أ'}, 'ب')['score'] == 0
+
+
+def test_deeply_nested_action_is_an_error_not_a_crash():
+    contents = iter(['[' * 100000, json.dumps({'action': 'finish', 'answer': 'done'})])
+
+    async def invoke(messages):
+        return {'content': next(contents), 'model': 'fake', 'usage': {}}
+
+    result = asyncio.run(run_fixture('Answer', {'a.txt': 'x'}, invoke))
+    assert result['transcript'][0]['result'].startswith('Error:')
+    assert result['status'] == 'complete'

@@ -75,3 +75,28 @@ def test_unknown_harness_version_stops_before_requests():
     pack['harness']['version'] = 'future'
     with pytest.raises(ValueError, match='Unsupported task contract'):
         run(manifest, pack, cases, endpoint='http://localhost/v1', model='fixture')
+
+
+def test_lone_surrogate_response_fails_only_its_case():
+    manifest, pack, cases = load_pack(PACK)
+
+    def endpoint(request):
+        # Valid JSON whose string decodes to a lone surrogate; it cannot be UTF-8 encoded.
+        return httpx.Response(
+            200,
+            content=b'{"choices":[{"message":{"content":"\\ud800"}}]}',
+            headers={'content-type': 'application/json'},
+        )
+
+    bundle = run(manifest, pack, cases, endpoint='http://localhost/v1', model='fixture',
+                 transport=httpx.MockTransport(endpoint))
+    validate_bundle(bundle)
+    assert len(bundle['records']) == len(cases)
+    assert {r['status'] for r in bundle['records']} == {'provider_error'}
+    assert {r['error_class'] for r in bundle['records']} == {'UnicodeEncodeError'}
+    assert all(r['output'] == '' for r in bundle['records'])
+
+
+def test_deeply_nested_label_output_is_invalid_not_a_crash():
+    assert parse_label('[' * 100000, ['billing']) is None
+    assert parse_label('1' * 5000, ['billing']) is None

@@ -100,7 +100,7 @@ def run(cases, base_url, model, timeout=10.0, max_seconds=120.0):
                 or isinstance(getattr(exc, "reason", None), TimeoutError)
                 else "transport_error"
             )
-        except (ValueError, KeyError, IndexError, TypeError):
+        except (ValueError, KeyError, IndexError, TypeError, RecursionError):
             row["status"] = "invalid"
         row["elapsed_ms"] = round((time.perf_counter() - start) * 1000, 3)
         yield row
@@ -127,7 +127,9 @@ def main():
     if args.mode == "baseline":
         rows = [{"case_id": c["id"], "status": "ok", "output": first_option(c)} for c in cases]
     elif args.mode == "score":
-        rows = [json.loads(line) for line in args.responses.read_text().splitlines() if line]
+        # "\n" only: splitlines() would also split on U+2028/U+2029 inside JSON strings.
+        lines = args.responses.read_text().split("\n")
+        rows = [json.loads(line) for line in lines if line.strip(" \t\r")]
     else:
         rows = run(cases, args.base_url, args.model, args.timeout, args.max_seconds)
     saved = []

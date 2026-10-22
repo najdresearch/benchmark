@@ -64,3 +64,32 @@ def test_cases_without_review_metadata_are_eligible(monkeypatch):
     value.pop("audit_status", None)
     value.pop("review_status", None)
     assert validate_cases([value]) == [value]
+
+
+@pytest.mark.parametrize(
+    "output",
+    ["1" * 5000, "[" * 100000, '{"answerKey":' * 100000],
+    ids=["digit-limit", "array-nesting", "object-nesting"],
+)
+def test_hostile_json_output_is_invalid_not_a_crash(output):
+    result = grade(CASE, output)
+    assert result["score"] == 0.0 and not result["valid_output"]
+
+
+def test_hostile_output_does_not_abort_scoring(monkeypatch):
+    from najd_benchmark import arabic_mmlu
+
+    monkeypatch.setattr(arabic_mmlu, "CASE_COUNT", 2)
+    monkeypatch.setattr(
+        arabic_mmlu, "CASE_IDS_SHA256", hashlib.sha256(b"example\nexample-2\n").hexdigest()
+    )
+    other = copy.deepcopy(CASE)
+    other["id"] = "example-2"
+    report = arabic_mmlu.score_responses(
+        [CASE, other],
+        [
+            {"case_id": "example", "output": "[" * 100000},
+            {"case_id": "example-2", "output": "B"},
+        ],
+    )
+    assert (report["correct"], report["valid_outputs"], report["invalid_or_missing"]) == (1, 1, 1)

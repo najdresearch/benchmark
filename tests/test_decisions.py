@@ -175,3 +175,31 @@ def test_public_evaluation_requires_explicit_opt_in_and_clearance(tmp_path, case
     with pytest.raises(ValueError):
         load_pack(tmp_path)
     assert load_pack(tmp_path, allow_public_evaluation=True)[1] == [case]
+
+
+def test_deeply_nested_endpoint_output_is_invalid_not_a_crash(case):
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_POST(self):
+            self.rfile.read(int(self.headers["Content-Length"]))
+            content = "[" * 100000
+            data = json.dumps(
+                {"choices": [{"finish_reason": "stop", "message": {"content": content}}]}
+            ).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        rows = list(run([case], f"http://127.0.0.1:{server.server_port}/v1", "ok"))
+        assert rows[0]["status"] == "invalid"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()

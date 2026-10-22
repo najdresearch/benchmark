@@ -11,7 +11,10 @@ from .arabic_mmlu import CASES_SHA256, score_responses
 
 
 def _read_jsonl(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+    # Split on "\n" only: str.splitlines() also breaks on U+2028/U+2029/U+0085, which are legal
+    # unescaped characters inside JSON strings (json.dumps(..., ensure_ascii=False) writes them).
+    lines = path.read_text(encoding="utf-8").split("\n")
+    return [json.loads(line) for line in lines if line.strip(" \t\r")]
 
 
 def main() -> None:

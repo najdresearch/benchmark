@@ -87,7 +87,7 @@ async def run_fixture(
                 result = 'written'
             else:
                 raise ValueError('Unknown action')
-        except (ValueError, KeyError, TypeError) as exc:
+        except (ValueError, KeyError, TypeError, RecursionError) as exc:
             result = f'Error: {exc}'
         transcript.append({'response': content, 'result': result,
                            'model': model, 'usage': response.get('usage', {})})

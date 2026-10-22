@@ -53,7 +53,8 @@ def _parse_key(output: str, option_count: int) -> str | None:
     else:
         try:
             parsed = json.loads(text)
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):
+            # JSONDecodeError, int digit limit, and deeply nested input are invalid answers.
             return None
         if not isinstance(parsed, dict) or set(parsed) != {"answerKey"}:
             return None
