@@ -21,9 +21,9 @@ uv run pytest
 uv run najd-benchmark --cases /path/to/cases.jsonl --responses /path/to/responses.jsonl
 ```
 
-Download `datasets/najd-benchmark/2026.09.27/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
+Download `datasets/najd-benchmark/2026.09.27.1/cases.jsonl` from [this immutable dataset revision](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569/datasets/najd-benchmark/2026.09.27.1). Each response line contains `case_id` and `output`. See the [task guide](docs/tasks/arabic-mmlu-key-v1.md) for formats, baselines and metrics.
 
-Current case-file SHA-256: `149e6815a29434a462e9d1f8f3ccbb21a142c79848947ad20c19b9639c72c081`.
+Current case-file SHA-256: `f2ffd3466a7f3027c585b210e4708b2d589e1df27f365a5dd5b48a4927ef0ff7`.
 This revision removes review annotations without changing case content. The 104-case selection and scorer are unchanged. Missing/invalid outputs score zero; unknown or duplicate response IDs fail validation. Annotations do not control eligibility.
 
 ## Repository boundaries
@@ -49,7 +49,7 @@ A reviewed task definition, baseline and deterministic scorer for the internal A
 
 ## Local decision-model setup
 
-A separate [development task guide](docs/tasks/decision-pilot-dev-v0.1.md) documents the new strict decision scorer and loopback endpoint runner. Saved-response parity covers the ten original pilot configurations. The general remote runner and Arena worker integration remain planned.
+The strict decision scorer (`decision-dev-v0.1`) and its frozen inputs are documented in the [decision load protocol](docs/decision-load-protocol.md), and the registered systems in [full roster execution](docs/full-roster-execution.md). The loopback-only endpoint runner is `python -m najd_benchmark.decision_cli` (`baseline`, `score` and `run` modes). Saved-response parity covers the ten original pilot configurations. The general remote runner and Arena worker integration remain planned.
 
 ## Unified dataset release
 

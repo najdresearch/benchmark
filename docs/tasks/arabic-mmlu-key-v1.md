@@ -4,7 +4,7 @@ This is the first executable Najd text task. It checks whether a model picks the
 
 | Field | Frozen value or rule |
 |---|---|
-| Dataset | [`najdresearch/najd-benchmark`](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/e2dcd2aac116da180835ce9eacc7572bc7cec2f7/datasets/najd-benchmark/2026.09.27) `2026.09.27`, revision `e2dcd2aac116da180835ce9eacc7572bc7cec2f7` |
+| Dataset | [`najdresearch/najd-benchmark`](https://huggingface.co/datasets/najdresearch/najd-benchmark/tree/3fa471f6c8ed2ebc37a8b60d40c88170d682b569/datasets/najd-benchmark/2026.09.27.1) `2026.09.27.1`, revision `3fa471f6c8ed2ebc37a8b60d40c88170d682b569`, cases SHA-256 `f2ffd3466a7f3027c585b210e4708b2d589e1df27f365a5dd5b48a4927ef0ff7` |
 | Selection | Certified `arabicmmlu` source rows only; 104 cases; sorted ID digest `f65459ada9049628c8c676a8c7d51a2b16736cdab67743a80a64a05b0ea19b41` |
 | Input | Original question, followed by every option in A–E order |
 | Output | One uppercase Latin key, or JSON containing only `answerKey` |
